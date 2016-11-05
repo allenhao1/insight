@@ -65,26 +65,24 @@ Router.route('/questions', {where: 'server'})
     });
 Router.route('/scores',{where: 'server'})
     .get(function(){
-        var response = Score.find().fetch();
+        var response = User.find({_id: this.params.query.id}).fetch()[0]["scores"];
         this.response.setHeader('Content-Type','application/json');
         this.response.end(JSON.stringify(response));
     })
     .post(function(){
         var response;
-        if(this.request.body.time === undefined || this.request.body.date === undefined || this.body.score === undefined) { //*TODO* Fill out wh
+        if(this.request.body.score === undefined) {
             response = {
                 "error" : true,
                 "message" : "invalid data"
             };
         } else {
-            Score.insert({
-                time : this.request.body.time,
-                date : this.request.body.date,
-                score: this.request.body.score
-            });
-            response = {
-                "error" : false,
-                "message" : "Score added."
+            var data = {score: this.request.body.score, datetime: new Date() }; //Push the score with a timestamp
+            if (User.update({_id : this.request.body._id},{$push : {score: data} }) === 1) {
+              response = {
+                  "error" : false,
+                  "message" : "Score added."
+              }
             }
         }
         this.response.setHeader('Content-Type','application/json');
