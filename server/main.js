@@ -9,15 +9,22 @@ if(Meteor.isServer) {
 // GET /user - returns every message from MongoDB collection.
 Router.route('/questions', {where: 'server'})
     .get(function() {
-      var data = {"_id" : this.query.params._id};
-      if(this.query.params.id === undefined) {
-        var response = User.find(data).fetch().questions;
+      var data = {"_id" : this.params.query._id};
+      if(this.params.query._id !== undefined) {
+        // var response = User.find(data).fetch().questions;
+        // var doc = User.find({"questions" : {$elemMatch: data }}, {"questions.$": 1, _id: 0}).fetch();
+        var doc = User.aggregate(
+            {"$unwind": "$questions"},
+            {"$match": {"questions._id" : this.params.query._id}},
+            {"$project" : {"questions" : 1}}
+        );
+        var response = doc[0].questions;
         this.response.setHeader('Content-Type','application/json');
         this.response.end(JSON.stringify(response));
       } else {
         response = {
           "error" : true,
-          "message" : "No user"
+          "message" : "No existing questions"
         }
         this.response.setHeader('Content-Type','application/json');
         this.response.end(JSON.stringify(response));
