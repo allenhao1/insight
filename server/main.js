@@ -3,12 +3,59 @@ import { Meteor } from 'meteor/meteor';
 if(Meteor.isServer) {
    // When Meteor starts, create new collection in Mongo if not exists.
     Meteor.startup(function () {
-        Meteor.status
         User = new Meteor.Collection('user');
-        Score = new Meteor.Collection('score');
     });
 
 // GET /user - returns every message from MongoDB collection.
+Router.route('/questions', {where: 'server'})
+    .get(function() {
+      var data = {"_id" : this.query.params._id};
+      if(this.query.params.id === undefined) {
+        var response = User.find(data).fetch().questions;
+        this.response.setHeader('Content-Type','application/json');
+        this.response.end(JSON.stringify(response));
+      } else {
+        response = {
+          "error" : true,
+          "message" : "No user"
+        }
+        this.response.setHeader('Content-Type','application/json');
+        this.response.end(JSON.stringify(response));
+      }
+    })
+    .post(function() {
+      var response;
+      var request = this.request.body;
+      var isset = request.text !== undefined && request.options !== undefined && request.answer !== undefined;
+      var validArray = request.options.length > 1 && request.options.includes(request.answer)
+      if(!isset || !validArray) { //If post variables are not well-formed
+        response = {
+            "error" : true,
+            "message" : "invalid data"
+        };
+      } else { //Input is ok. Post to db
+        var data = {
+          "_id" : new Mongo.ObjectID()["_str"],
+          "text" : request.text,
+          "options" : request.options,
+          "answer" : request.answer,
+          "new" : true
+        }
+        if(User.update({_id : request._id}, {$push : {questions: data} }) === 1) { //Push questions to the user
+          response = {
+              "error" : false,
+              "message" : "question added"
+          };
+        } else {
+          response = {
+              "error" : true,
+              "message" : "cannot insert"
+          };
+        }
+      }
+      this.response.setHeader('Content-Type','application/json');
+      this.response.end(JSON.stringify(response));
+    });
 Router.route('/scores',{where: 'server'})
     .get(function(){
         var response = Score.find().fetch();
@@ -52,12 +99,11 @@ Router.route('/users',{where: 'server'})
         if(this.request.body.username === undefined || this.request.body.password === undefined) {
             response = {
                 "error" : true,
-                "message" : "invalid data",
-                "params" : this.request.body
-                // "params" : this.request.body.username + " " + this.request.body.password;
+                "message" : "invalid data"
             };
         } else {
             User.insert({
+                _id : ObjectId(),
                 username : this.request.body.username,
                 password : this.request.body.password,
                 scores: [],
@@ -100,7 +146,7 @@ Router.route('/users/:id',{where: 'server'})
         if(this.params.id !== undefined) {
             var data = User.find({_id : this.params.id}).fetch();
             if(data.length > 0) {
-                if(User.update({_id : data[0]._id},{$set : {username : this.request.body.username,password : this.request.body.password}}) === 1) {
+                if(User.update({_id : data[0]._id},{$set : {username : this.request.body.username,password : this.request.body.password, scores: this.request.body.scores, questions: this.request.body.questions}}) === 1) {
                     response = {
                         "error" : false,
                         "message" : "User information updated."
