@@ -11,8 +11,8 @@ EmailPasswordForm = React.createClass({
     return (
       <form onSubmit={this.props.submitAction}>
         <div className="form-group">
-          <label htmlFor="email">Email:</label>
-          <input placeholder="Email" type="email" id="email" className="form-control"/>
+          <label htmlFor="username">Username:</label>
+          <input placeholder="Username" type="text" id="username" className="form-control"/>
         </div>
         <div className="form-group">
           <label htmlFor="password">Password:</label>
