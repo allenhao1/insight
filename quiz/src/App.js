@@ -158,10 +158,8 @@ renderQuiz() {
   render() {
     return (
       <div className="App">
-        <div className="App-header">
-          <img src="http://coenraets.org/present/react/img/react.png" className="App-logo" alt="logo" />
-          <h2>Insight</h2>
-        </div>
+         <div className="App-header">
+         </div>
         {this.state.result ? this.renderResult() : this.renderQuiz()}
       </div>
     );
