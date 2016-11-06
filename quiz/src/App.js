@@ -123,20 +123,15 @@ class App extends Component {
 
   setResults(result) {
     var score = this.state.score / this.state.questions.length;
-    if (result.length === 1) {
-      this.setState({ result: "YOUR SCORE IS " +  Math.round(score * 100)});
-      var http = new XMLHttpRequest();
-      var url = "http://localhost:3000/scores";
-      var params = "score=" + score;
-      http.open("POST", url, true);
+    var http = new XMLHttpRequest();
+    var url = "http://localhost:9000/scores";
+    var params = "score=" + score + "&_id=" + "92d8ed46217948a4ccc4b803";
+    http.open("POST", url, true);
 
-      //Send the proper header information along with the request
-      http.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-      http.send(params);
-    } else {
-
-      this.setState({ result: "YOUR SCORE IS " + score });
-    }
+    //Send the proper header information along with the request
+    http.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+    http.send(params);
+    this.setState({ result: "YOUR SCORE IS " + Math.round(score*100)/100 });
   }
 
 renderQuiz() {

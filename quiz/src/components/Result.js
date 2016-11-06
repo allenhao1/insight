@@ -1,5 +1,6 @@
 import React from 'react';
 import {Chart} from 'react-google-charts'
+const request = require('request');
 function Result(props) {
   // chartEvents=[
   //       {
@@ -37,15 +38,30 @@ function Result(props) {
   //     ]
   //   }
   // }
+
+  var url = "http://localhost:9000/scores?_id=" + "92d8ed46217948a4ccc4b803";
+  var data = [['Time', 'Score']];
+  request(url, {withCredentials: false}, function(error, response, body) {
+    if (!error && response.statusCode == 200){
+      var response = JSON.parse(body);
+      for (var i in response) {
+        console.log(response)
+        console.log(response[i])
+        data.push([ parseInt(new Date(response[i].datetime).getTime()) + ", " + response[i].score]);
+      }
+    }
+  })
+
+
   return (
 
     <div>
-       <strong>{props.quizResult}</strong>!
+       <strong>{props.quizResult}</strong>
 
     <div className={"my-pretty-chart-container"}>
       <Chart
         chartType="ScatterChart"
-        data={[['Age', 'Weight'], [8, 12], [4, 5.5]]}
+        data={[]}
         options={{}}
         graph_id="ScatterChart"
         width="100%"
