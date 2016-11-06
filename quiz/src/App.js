@@ -3,15 +3,17 @@ import update from 'react-addons-update';
 import quizQuestions from './api/quizQuestions';
 import Quiz from './components/Quiz';
 import Result from './components/Result';
+const request = require('request');
 import './App.css';
 
 class App extends Component {
-
   constructor(props) {
     super(props);
 
     this.state = {
+      questions : [],
       counter: 0,
+      percentCorrect: 0,
       questionId: 1,
       question: '',
       score: 0,
@@ -29,12 +31,26 @@ class App extends Component {
   }
 
   componentWillMount() {
-    const shuffledAnswerOptions = quizQuestions.map((question) => this.shuffleArray(question.answers));
-    this.setState({
-      question: quizQuestions[0].question,
-      answerOptions: shuffledAnswerOptions[0]
+    var userId = "92d8ed46217948a4ccc4b803";
+    var url = "http://localhost:9000/questions?_id=" + userId;
+    var app = this;
+    request(url, {withCredentials: false}, function(error, response, body) {
+      if (!error && response.statusCode == 200){
+        var questions = JSON.parse(body);
+        app.setState({
+          questions: questions,
+          question: questions[0].text,
+          answerOptions: questions[0].answers
+        });
+        // const shuffledAnswerOptions = questions.map((question) => this.shuffleArray(question.answers));
+
+
+      }
     });
   }
+
+
+
 
   shuffleArray(array) {
     var currentIndex = array.length, temporaryValue, randomIndex;
@@ -57,10 +73,8 @@ class App extends Component {
 
   handleAnswerSelected(event) {
     this.setUserAnswer(event.currentTarget.value);
-    console.log("HI!:-)))) ");
-    console.log(event.currentTarget);
 
-    if (this.state.questionId < quizQuestions.length) {
+    if (this.state.questionId < this.state.questions.length) {
         setTimeout(() => this.setNextQuestion(), 300);
     } else {
         setTimeout(() => this.setResults(this.getResults()), 300);
@@ -86,13 +100,14 @@ class App extends Component {
     const counter = this.state.counter + 1;
     const questionId = this.state.questionId + 1;
     const score = this.state.score;
+    const questions = this.state.questions;
 
     this.setState({
         counter: counter,
         score: score,
         questionId: questionId,
-        question: quizQuestions[counter].question,
-        answerOptions: quizQuestions[counter].answers,
+        question: questions[counter].text,
+        answerOptions: questions[counter].answers,
         answer: ''
     });
   }
@@ -107,14 +122,25 @@ class App extends Component {
   }
 
   setResults(result) {
+    var score = this.state.score / this.state.questions.length;
     if (result.length === 1) {
-      this.setState({ result: this.state.score });
+      this.setState({ result: "YOUR SCORE IS " +  score});
+      var http = new XMLHttpRequest();
+      var url = "http://localhost:3000/scores";
+      var params = "score=" + score;
+      http.open("POST", url, true);
+
+      //Send the proper header information along with the request
+      http.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+      http.send(params);
     } else {
-      this.setState({ result: "YOUR SCORE IS " + this.state.score });
+
+      this.setState({ result: "YOUR SCORE IS " + score });
     }
   }
 
 renderQuiz() {
+    var questions = this.state.questions;
     return (
       <Quiz
         answer={this.state.answer}
@@ -122,7 +148,7 @@ renderQuiz() {
         counter = {this.state.counter}
         questionId={this.state.questionId}
         question={this.state.question}
-        questionTotal={quizQuestions.length}
+        questionTotal={questions.length}
         onAnswerSelected={this.handleAnswerSelected}
       />
     );
@@ -138,8 +164,8 @@ renderQuiz() {
     return (
       <div className="App">
         <div className="App-header">
-          <img src="http://coenraets.org/present/react/img/react.png" className="App-logo" alt="logo" />
-          <h2>React Quiz</h2>
+          <img src="insight.png" className="App-logo" alt="logo" />
+          <h2>Insight</h2>
         </div>
         {this.state.result ? this.renderResult() : this.renderQuiz()}
       </div>
