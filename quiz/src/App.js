@@ -124,7 +124,7 @@ class App extends Component {
   setResults(result) {
     var score = this.state.score / this.state.questions.length;
     if (result.length === 1) {
-      this.setState({ result: "YOUR SCORE IS " +  score});
+      this.setState({ result: "YOUR SCORE IS " +  Math.round(score * 100)});
       var http = new XMLHttpRequest();
       var url = "http://localhost:3000/scores";
       var params = "score=" + score;
@@ -164,7 +164,7 @@ renderQuiz() {
     return (
       <div className="App">
         <div className="App-header">
-          <img src="insight.png" className="App-logo" alt="logo" />
+          <img src="http://coenraets.org/present/react/img/react.png" className="App-logo" alt="logo" />
           <h2>Insight</h2>
         </div>
         {this.state.result ? this.renderResult() : this.renderQuiz()}
