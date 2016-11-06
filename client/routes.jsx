@@ -16,11 +16,20 @@ Router.route('/login', {
   }
 });
 
+
 Router.route('/register', {
   name: 'register',
   action: function() {
     ReactLayout.render(App, {
       content: <Register />
+    });
+  }
+});
+Router.route('/quiz', {
+  name: 'quiz',
+  action: function() {
+    ReactLayout.render(App, {
+      content: <Quiz />
     });
   }
 });
