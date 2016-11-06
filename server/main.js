@@ -108,7 +108,7 @@ Router.route('/users',{where: 'server'})
             };
         } else {
             User.insert({
-                _id : ObjectId(),
+                _id : new Mongo.ObjectID()["_str"],
                 username : this.request.body.username,
                 password : this.request.body.password,
                 scores: [],
